@@ -947,6 +947,58 @@ res.status(200).json({
 };
 
 
+// POST /trip/start/:tripId
+
+const startTrip = async (req, res) => {
+  try {
+    const { tripId } = req.params;
+    const userId = req.user.id;
+    const io = req.app.get("io");   
+
+    const trip = await Trip.findById(tripId)
+      .populate("driver", "name email phone avatar rating")
+      .populate("joinedPassengers.user", "name email phone avatar");
+
+    const tracking = await TripTracking.findOne({ trip: tripId })
+      .populate("checkpoints.passengers.user", "name email phone avatar");
+
+    if (!tracking) {
+      return res.status(404).json({
+        success: false,
+        message: "Tracking not found",
+      });
+    }
+
+    // UPDATE
+    tracking.tripStarted = true;
+    tracking.currentCheckpointIndex = 0;
+
+    await tracking.save();
+
+    const host = trip.driver._id.toString() === userId;
+
+    // 🔥 CREATE SAME STRUCTURE AS API RESPONSE
+    const responseData = {
+      host,
+      trip,
+      tracking,
+    };
+
+    // 🔥 SOCKET EMIT (IMPORTANT)
+    io.to(tripId).emit("tracking_update", responseData);
+
+    res.json({
+      success: true,
+      data: responseData,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+};
+
+
 module.exports = {
   sheareTrip,
   getTrips,
@@ -958,5 +1010,6 @@ module.exports = {
   addUserInTrip,
   removeUserFromTrip,
   getMyTrips,
-  getTripTracking
+  getTripTracking,
+  startTrip,
 };

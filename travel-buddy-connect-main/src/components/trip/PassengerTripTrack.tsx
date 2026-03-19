@@ -6,8 +6,8 @@ function PassengerTripTrack({ data }: any) {
   const { trip, tracking } = data;
   const driver = trip.driver;
 
-  // testing
-  const currentIndex = 2;
+  // ✅ FIXED
+  const currentIndex = tracking.currentCheckpointIndex;
 
   return (
     <div className="space-y-8">
@@ -50,7 +50,8 @@ function PassengerTripTrack({ data }: any) {
 
           {tracking.checkpoints.map((cp: any, i: number) => {
 
-            const completed = i < currentIndex || cp.completed;
+            // ✅ LOGIC FIX
+            const completed = i < currentIndex;
             const current = i === currentIndex;
 
             return (
@@ -58,10 +59,7 @@ function PassengerTripTrack({ data }: any) {
               <div key={i} className="flex gap-4 relative pb-8">
 
                 {/* LEFT TIMELINE */}
-
                 <div className="flex flex-col items-center">
-
-                  {/* CIRCLE */}
 
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center
@@ -76,8 +74,6 @@ function PassengerTripTrack({ data }: any) {
                     {completed ? <Check size={18} /> : i + 1}
                   </div>
 
-                  {/* LINE */}
-
                   {i !== tracking.checkpoints.length - 1 && (
                     <div
                       className={`w-[2px] h-10 ${
@@ -89,7 +85,6 @@ function PassengerTripTrack({ data }: any) {
                 </div>
 
                 {/* RIGHT CONTENT */}
-
                 <div>
 
                   <p className="font-semibold">

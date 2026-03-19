@@ -99,6 +99,7 @@ interface UserContextType {
   myTrips: any;
   tracking: any;
   fetchTripTracking: (tripId: string) => Promise<void>;
+  currentIndex: number;
 
 }
 
@@ -138,6 +139,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [myTrips, setMyTrips] = useState<any>([]);
   const [tracking, setTracking] = useState<any>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [driverLocation, setDriverLocation] = useState<any>(null);
 
 
   const location = useLocation();
@@ -192,11 +195,29 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       setNotifications((prev) => [notification, ...prev]);
       toast.error(notification.message);
     });
+    // trip tracking update current index of driver
+
+    // FULL tracking update (MAIN EVENT)
+    newSocket.on("tracking_update", (updatedTracking) => {
+      setTracking(updatedTracking);
+    });
+
+    // Optional: only index update
+    newSocket.on("current_checkpoint", (data) => {
+      setCurrentIndex(data.currentIndex);
+    });
+
+    // Driver live location
+    newSocket.on("driver_location", (location) => {
+      setDriverLocation(location);
+    });
 
     return () => {
       newSocket.disconnect();
     };
   }, [user]);
+
+
 
   /* ------------------ Load Token on Refresh ------------------ */
   useEffect(() => {
@@ -433,9 +454,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!tbtoken) return; // important
 
       const res = await axios.get(
-        `${backendUrl}/trip/tracking/${tripId}`,{
-          headers: { Authorization: `Bearer ${tbtoken}` },
-        }
+        `${backendUrl}/trip/tracking/${tripId}`, {
+        headers: { Authorization: `Bearer ${tbtoken}` },
+      }
       );
 
       setTracking(res.data.data);
@@ -519,7 +540,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         backendUrl,
         myTrips,
         tracking,
-        fetchTripTracking
+        fetchTripTracking,
+        currentIndex
 
 
       }}

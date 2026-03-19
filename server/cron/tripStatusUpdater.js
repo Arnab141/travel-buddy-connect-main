@@ -47,7 +47,8 @@ const createNewTriptarking = async (tripId) => {
         .filter(
           (p) =>
             p.status === "accepted" &&
-            p.selectedPickup.name === pickup.location.name
+            p.selectedPickup.lat === pickup.location.lat &&
+            p.selectedPickup.lng === pickup.location.lng
         )
         .map((p) => ({
           user: p.user._id,
@@ -113,7 +114,7 @@ cron.schedule("* * * * *", async () => {
 
       /* ---------------- Update Trip Status ---------------- */
 
-      trip.status = "ongoing";  
+      trip.status = "ongoing";
       await trip.save();
 
       /* ---------------- Expire Pending Requests ---------------- */
