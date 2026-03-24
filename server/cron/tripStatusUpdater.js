@@ -55,7 +55,7 @@ const createNewTriptarking = async (tripId) => {
           otp: generateOtp(),
           verified: false,
         }));
-
+        console.log("Passengers at pickup:", passengersAtPickup);
       checkpoints.push({
         type: "pickup",
         location: pickup.location,

@@ -97,8 +97,6 @@ const tripSchema = new mongoose.Schema(
     availableSeats: {
       type: Number,
       required: true,
-      min: 1,
-      max: 10,
     },
 
     luggage: {

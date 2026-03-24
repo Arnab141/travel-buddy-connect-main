@@ -4,6 +4,8 @@ import FeaturedTrips from "@/components/FeaturedTrips";
 import HowItWorks from "@/components/HowItWorks";
 import ShareRide from "@/components/ShareRide";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
+
 
 const Index = () => {
   return (
@@ -14,6 +16,7 @@ const Index = () => {
       <HowItWorks />
       <ShareRide />
       <Footer />
+      <ChatWidget />
     </div>
   );
 };

@@ -15,6 +15,7 @@ import MyTrip from "./pages/MyTrip";
 import TripRequest from "./pages/TripRequest";
 import Allnotification from "./pages/Allnotification";
 import TripTraking from "./pages/TripTraking";
+import ChatWidget from "./components/ChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Sonner />
           <ToastContainer />
           <Routes>
+            
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path='/user/trips' element={<Trip />} />
@@ -37,9 +39,9 @@ const App = () => (
             <Route path='user/notifications' element={<Allnotification />} />
             <Route path="/user/my-trips/track/:tripId" element={<TripTraking />} />
 
-
             <Route path="*" element={<NotFound />} />
           </Routes>
+            <ChatWidget />
         </TooltipProvider>
       </QueryClientProvider>
     </UserProvider>
