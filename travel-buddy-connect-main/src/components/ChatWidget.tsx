@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Car } from "lucide-react";
+import { X, Send, Car } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { useUser } from "@/context/UserContext";
 
 interface DisplayMessage {
   id: string;
@@ -8,58 +9,23 @@ interface DisplayMessage {
   content: string;
 }
 
-const API_KEY = "AIzaSyCDe4R3XlVwP012asg0-wImmYYAGRobTaw";
-
-const API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
-
-// ✅ PROFESSIONAL SYSTEM INSTRUCTION
-const SYSTEM_INSTRUCTION = `
-You are TravelBuddy AI, the assistant inside the TravelBuddy platform.
-
-TravelBuddy is a trip-sharing system where users can:
-- Post trips
-- Find trips with similar routes
-- Share rides with others
-- Split travel costs
-
-Your role:
-- Help users post or find trips
-- Guide them clearly on what to do next
-- Suggest simple ways to save travel cost
-
-Rules:
-- Keep answers short and direct
-- Use a professional and clean tone
-- Avoid unnecessary emojis
-- Focus on actions
-
-Examples:
-User: "hi"
-→ "Welcome to TravelBuddy. Do you want to post a trip or find one?"
-
-User: "Delhi to Chandigarh"
-→ "You can search for trips on this route or post your own to share travel costs."
-
-User: "how to save money?"
-→ "Join an existing trip or share your own to split the cost."
-`;
-
 // ✅ CLEAN WELCOME MESSAGE
 const WELCOME_MESSAGE: DisplayMessage = {
   id: "welcome",
   role: "assistant",
   content:
-    "Hey there! 👋 I'm **TravelBuddy**, your AI travel companion. Ask me about destinations, itineraries, packing tips, or anything travel-related!",
+    "Hey there! 👋 I'm **TravelBuddy**, your AI travel companion. Ask me anything about your trip.",
 };
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<DisplayMessage[]>(([
+  const [messages, setMessages] = useState<DisplayMessage[]>([
     WELCOME_MESSAGE,
-  ]));
+  ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const { backendUrl } = useUser(); // ✅ using your context
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -75,47 +41,34 @@ export default function ChatWidget() {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
-  // ✅ Gemini API call (STABLE)
-  const sendMessageToGemini = async (userMessage: string) => {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-goog-api-key": API_KEY,
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text:
-                  SYSTEM_INSTRUCTION +
-                  "\n\nUser: " +
-                  userMessage,
-              },
-            ],
-          },
-        ],
-      }),
-    });
+  // ✅ CALL YOUR BACKEND (FIXED)
+  const sendMessageToBackend = async (userMessage: string) => {
+    const response = await fetch(
+      `${backendUrl}/bot/get-response`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: userMessage,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("Gemini API error:", err);
-      throw new Error("API Error");
+      console.error("Backend error:", err);
+      throw new Error("Backend Error");
     }
 
     const data = await response.json();
 
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!text) {
-      console.error("Full response:", data);
+    if (!data.reply) {
       throw new Error("Empty response");
     }
 
-    return text.trim();
+    return data.reply;
   };
 
   const handleSend = async () => {
@@ -133,7 +86,7 @@ export default function ChatWidget() {
     setIsLoading(true);
 
     try {
-      const reply = await sendMessageToGemini(text);
+      const reply = await sendMessageToBackend(text);
 
       setMessages((prev) => [
         ...prev,
@@ -145,13 +98,14 @@ export default function ChatWidget() {
       ]);
     } catch (err) {
       console.error(err);
+
       setMessages((prev) => [
         ...prev,
         {
           id: crypto.randomUUID(),
           role: "assistant",
           content:
-            "Unable to connect to TravelBuddy AI. Please try again.",
+            "Server error. Please try again in a moment.",
         },
       ]);
     } finally {
@@ -165,7 +119,7 @@ export default function ChatWidget() {
       <button
         onClick={() => setIsOpen((o) => !o)}
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center 
-  rounded-full bg-blue-600 text-white shadow-lg"
+        rounded-full bg-blue-600 text-white shadow-lg"
         style={{
           animation: "floatBounce 2.5s ease-in-out infinite",
         }}
@@ -210,16 +164,18 @@ export default function ChatWidget() {
             {messages.map((m) => (
               <div
                 key={m.id}
-                className={`flex ${m.role === "user"
+                className={`flex ${
+                  m.role === "user"
                     ? "justify-end"
                     : "justify-start"
-                  }`}
+                }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${m.role === "user"
+                  className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+                    m.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-foreground"
-                    }`}
+                  }`}
                 >
                   {m.role === "assistant" ? (
                     <ReactMarkdown>{m.content}</ReactMarkdown>

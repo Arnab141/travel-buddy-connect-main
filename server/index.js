@@ -16,6 +16,7 @@ const api_version = "v1";
 const UserAuthRoute = require('./Routes/UserRoutes/auth');
 const TripRoute = require('./Routes/UserRoutes/trip');
 const connectDb = require('./Configs/db');
+const botRoutes = require('./Routes/UserRoutes/bot');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,6 +27,7 @@ connectDb();
 
 app.use(`/api/${api_version}/user`, UserAuthRoute);
 app.use(`/api/${api_version}/trip`, TripRoute);
+app.use(`/api/${api_version}/bot`, botRoutes);
 
 app.get('/', (req, res) => {
     res.send('Server is up and running');
