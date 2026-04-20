@@ -45,7 +45,7 @@ const Navbar: React.FC = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {[
-              { href: "/user/trips", label: "Find Trips" },
+              { href: "/user/all-trips", label: "Find Trips" },
               { href: "/#how-it-works", label: "How it Works" },
               { href: "/#share", label: "Share a Ride" },
             ].map((link, index: number) => (
@@ -283,7 +283,7 @@ const Navbar: React.FC = () => {
             >
               <div className="flex flex-col gap-4">
                 {[
-                  { href: "/user/trips", label: "Find Trips" },
+                  { href: "/user/all-trips", label: "Find Trips" },
                   { href: "/#how-it-works", label: "How it Works" },
                   { href: "/#share", label: "Share a Ride" },
                 ].map((link, index: number) => (
