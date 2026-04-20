@@ -144,7 +144,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
 
   const location = useLocation();
-  const backendUrl = import.meta.env.VITE_BACKEND_URL + "/api/v1" || "http://localhost:3000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL + "/api/v1" || "http://localhost:3000/api/v1";
   const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
   useEffect(() => {
