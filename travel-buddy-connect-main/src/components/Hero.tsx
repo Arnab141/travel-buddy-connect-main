@@ -179,7 +179,7 @@ const Hero = () => {
                 variant="hero-outline"
                 size="xl"
                 className="min-w-[220px]"
-                onClick={() => (window.location.href = "/user/trips")}
+                onClick={() => (window.location.href = "/user/all-trips")}
               >
                 🔍 Find a Ride
               </Button>

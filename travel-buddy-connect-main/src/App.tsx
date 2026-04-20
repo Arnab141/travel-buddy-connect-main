@@ -32,11 +32,11 @@ const App = () => (
             
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path='/user/trips' element={<Trip />} />
+            <Route path='/user/all-trips' element={<Trip />} />
             <Route path="/user/profile" element={<Profile />} />
             <Route path="/user/my-trips" element={<MyTrip />} />
             <Route path="/trips/request/:requestId" element={<TripRequest />} />
-            <Route path='user/notifications' element={<Allnotification />} />
+            <Route path='/user/notifications' element={<Allnotification />} />
             <Route path="/user/my-trips/track/:tripId" element={<TripTraking />} />
 
             <Route path="*" element={<NotFound />} />
