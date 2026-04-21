@@ -502,7 +502,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   /* ------------------ Auto Fetch Trips ------------------ */
   useEffect(() => {
     if (
-      location.pathname === "/user/trips" &&
+      location.pathname === "/user/all-trips" &&
       tbtoken &&
       tripData.length === 0
     ) {

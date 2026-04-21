@@ -18,7 +18,7 @@ const Auth = () => {
   const [gender, setGender] = useState("");
   const [phone, setPhone] = useState("");
 
-  const {register, generateOTP, verifyOTP, login} = useUser();
+  const { register, generateOTP, verifyOTP, login } = useUser();
 
   // ✅ OTP States
   const [otp, setOtp] = useState("");
@@ -33,118 +33,124 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // ✅ Fake OTP Send (Replace with backend API later)
- const handleSendOtp = async () => {
-  if (!email) {
-    toast.error("Please enter email first!",{position: "top-center"});
-    return;
-  }
-
-  try {
-    setOtpLoading(true);
-
-    const response = await generateOTP(email);
-    //console.log("OTP Response:", response);
-
-   // ✅ If backend says success
-    if (response?.success) {
-      setIsOtpSent(true);
-      setIsOtpVerified(false);
-      setOtp("");
-      setOtpTimer(60); // start 60 sec timer
-
-      toast.success("OTP sent successfully to your email!",{position: "top-center"});
-    } else {
-      toast.error(response?.message || "Failed to send OTP!",{position: "top-center"});
+  const handleSendOtp = async () => {
+    if (!email) {
+      toast.error("Please enter email first!", { position: "top-center" });
+      return;
     }
-  } catch (error) {
-    console.error("Send OTP Error:", error);
-    toast.error("Something went wrong while sending OTP!",{position: "top-center"});
-  } finally {
-    setOtpLoading(false);
-  }
-};
+
+    try {
+      setOtpLoading(true);
+
+      const response = await generateOTP(email);
+      //console.log("OTP Response:", response);
+
+      // ✅ If backend says success
+      if (response?.success) {
+        setIsOtpSent(true);
+        setIsOtpVerified(false);
+        setOtp("");
+        setOtpTimer(60); // start 60 sec timer
+
+        toast.success("OTP sent successfully to your email!", { position: "top-center" });
+      } else {
+        toast.error(response?.message || "Failed to send OTP!", { position: "top-center" });
+      }
+    } catch (error) {
+      console.error("Send OTP Error:", error);
+      const message =
+        error?.response?.data?.message ||
+        "Something went wrong while sending OTP!";
+
+      toast.error(message, {
+        position: "top-center",
+      });
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
 
   // ✅ Fake OTP Verify (Replace with backend API later)
-const handleVerifyOtp = async () => {
-  if (!otp) {
-    toast.error("Please enter OTP!", { position: "top-center" });
-    return;
-  }
+  const handleVerifyOtp = async () => {
+    if (!otp) {
+      toast.error("Please enter OTP!", { position: "top-center" });
+      return;
+    }
 
-  try {
-    setVerifyOtpLoading(true);
+    try {
+      setVerifyOtpLoading(true);
 
-    const response = await verifyOTP(email, otp);
-    console.log("Verify OTP Response:", response);
+      const response = await verifyOTP(email, otp);
+      console.log("Verify OTP Response:", response);
 
-    if (response?.success) {
-      setIsOtpVerified(true);
-      toast.success(response?.message || "OTP Verified Successfully", {
-        position: "top-center",
-      });
-    } else {
+      if (response?.success) {
+        setIsOtpVerified(true);
+        toast.success(response?.message || "OTP Verified Successfully", {
+          position: "top-center",
+        });
+      } else {
+        setIsOtpVerified(false);
+        toast.error(response?.message || "Invalid OTP", {
+          position: "top-center",
+        });
+      }
+    } catch (error) {
+      console.log("Verify OTP Error:", error.response?.data || error.message);
+
       setIsOtpVerified(false);
-      toast.error(response?.message || "Invalid OTP", {
+      toast.error(error.response?.data?.message || "Invalid OTP", {
         position: "top-center",
       });
+    } finally {
+      setVerifyOtpLoading(false);
     }
-  } catch (error) {
-    console.log("Verify OTP Error:", error.response?.data || error.message);
-
-    setIsOtpVerified(false);
-    toast.error(error.response?.data?.message || "Invalid OTP", {
-      position: "top-center",
-    });
-  } finally {
-    setVerifyOtpLoading(false);
-  }
-};
+  };
 
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    // ✅ LOGIN
-    if (isLogin) {
-      await login(email, password);
-      return; // 🔥 important: stop here, don't run signup code
-    }
+    try {
+      // ✅ LOGIN
+      if (isLogin) {
+        await login(email, password);
+        return; // 🔥 important: stop here, don't run signup code
+      }
 
-    // ✅ SIGNUP validation: OTP must be verified
-    if (!isOtpVerified) {
-      toast.error("Please verify OTP before creating account!", {
+      // ✅ SIGNUP validation: OTP must be verified
+      if (!isOtpVerified) {
+        toast.error("Please verify OTP before creating account!", {
+          position: "top-center",
+        });
+        return;
+      }
+
+      // ✅ Phone validation
+      if (phone.length !== 10) {
+        toast.error("Phone number must be exactly 10 digits!", {
+          position: "top-center",
+        });
+        return;
+      }
+
+      // ✅ REGISTER
+      await register({ name, email, password, gender, phone });
+
+    } catch (err) {
+      console.error("Auth Error:", err);
+      toast.error("Authentication failed! Please try again.", {
         position: "top-center",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    // ✅ Phone validation
-    if (phone.length !== 10) {
-      toast.error("Phone number must be exactly 10 digits!", {
-        position: "top-center",
-      });
-      return;
-    }
-
-    // ✅ REGISTER
-    await register({ name, email, password, gender, phone });
-
-  } catch (err) {
-    console.error("Auth Error:", err);
-    toast.error("Authentication failed! Please try again.", {
-      position: "top-center",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
 
- 
+
   // ✅ OTP Timer Logic
   useEffect(() => {
     if (otpTimer <= 0) return;

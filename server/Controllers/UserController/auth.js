@@ -179,6 +179,7 @@ const register = async (req, res) => {
 const genarateOTP = async (req, res) => {
   try {
     const { email } = req.body;
+    // console.log("Received OTP generation request for email:", email);
 
 
     if (!email) {
@@ -194,7 +195,10 @@ const genarateOTP = async (req, res) => {
     }
 
     if (user) {
-      return res.status(404).json({ message: "User already exists", success: false });
+      return res.status(409).json({
+        message: "Email already registered. Please login.",
+        success: false
+      });
     }
 
     // Create 6-digit OTP
@@ -204,7 +208,7 @@ const genarateOTP = async (req, res) => {
     const otpDoc = new Otp({
       email: email.toLowerCase(),
       otp,
-     // expiresAt: Date.now() + 5 * 60 * 1000,
+      // expiresAt: Date.now() + 5 * 60 * 1000,
     });
 
     await otpDoc.save();
@@ -217,11 +221,11 @@ const genarateOTP = async (req, res) => {
       },
     });
 
-const mailOptions = {
-  from: process.env.EMAIL_USER,
-  to: email.toLowerCase(),
-  subject: "Your OTP for Travel Buddy Connect",
-  html: `
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email.toLowerCase(),
+      subject: "Your OTP for Travel Buddy Connect",
+      html: `
     <div style="font-family: Arial, sans-serif; background:#f4f6f9; padding:30px;">
       <div style="max-width:500px; margin:auto; background:white; border-radius:12px; padding:25px; box-shadow:0px 4px 12px rgba(0,0,0,0.1);">
         
@@ -265,7 +269,7 @@ const mailOptions = {
       </div>
     </div>
   `,
-};
+    };
 
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -273,7 +277,7 @@ const mailOptions = {
         console.error("Error sending email:", error);
         return res.status(500).json({ message: "Failed to send OTP email", success: false, error: error.message });
       }
-     // console.log("Email sent:", info.response);
+      // console.log("Email sent:", info.response);
     });
 
     res.status(200).json({
@@ -281,7 +285,8 @@ const mailOptions = {
       success: true,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message,success: false });
+    console.error("Error in genarateOTP:", error);
+    res.status(500).json({ message: "Server error", error: error.message, success: false });
   }
 };
 
